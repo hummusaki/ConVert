@@ -45,8 +45,8 @@ function applyTheme(isLightMode) {
     if (isLightMode) {
         document.documentElement.classList.add("light-mode");
         
-        if (favicon) favicon.setAttribute("href", "../assets/m2.png");
-        if (icon) icon.setAttribute('src', '../assets/m.png');
+        if (favicon) favicon.setAttribute("href", "https://gabmort.me/assets/m2.png");
+        if (icon) icon.setAttribute('src', 'https://gabmort.me/assets/m.png');
         if (toggleBtnIcon) {
             toggleBtnIcon.classList.remove('fa-moon');
             toggleBtnIcon.classList.add('fa-sun');
@@ -54,8 +54,8 @@ function applyTheme(isLightMode) {
     } else {
         document.documentElement.classList.remove("light-mode");
         
-        if (favicon) favicon.setAttribute("href", "../assets/m.png");
-        if (icon) icon.setAttribute('src', '../assets/m2.png');
+        if (favicon) favicon.setAttribute("href", "https://gabmort.me/assets/m.png");
+        if (icon) icon.setAttribute('src', 'https://gabmort.me/assets/m2.png');
         if (toggleBtnIcon) {
             toggleBtnIcon.classList.remove('fa-sun');
             toggleBtnIcon.classList.add('fa-moon');
