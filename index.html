@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert!</title>
+    
+    <script src="coi-serviceworker.js"></script>
+    <script src="modules/presets.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link id="favicon" rel="icon" href="/assets/m2.png"/>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-left">
+            <div class="title">
+                <span class="title">Convert!</span>
+            </div>
+        </div>
+        <a href="https://gabmort.me" class="gm-icon">
+            <img src="assets/m2.png" alt="gabmort" class="gm-icon" id="navbar-icon">
+        </a>
+        <div class="navbar-right">
+            <button class="dark-mode-toggle" id="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="content-area">
+        <div class="background-elements">
+            <div class="wave-line"></div>
+            <div class="hard-line"></div>
+        </div>
+
+        <div class="convert-area" id="convert-card">
+            <div class="left-panel">
+                <input type="file" id="file-input" hidden>
+                
+                <button class="choose-file-btn" onclick="document.getElementById('file-input').click()">
+                    Choose file
+                </button>
+
+                <div class="download-btn disabled" id="download-btn">
+                    <i class="fas fa-download download-icon"></i>
+                </div>
+            </div>
+
+            <div class="options-sidebar" id="options-sidebar">
+                <div class="sidebar-content">
+                    <h3>Convert to:</h3>
+                    <select id="format-select" class="format-select">
+                        <option value="" disabled selected>Select format</option>
+                    </select>
+                    
+                    <div class="file-info-box">
+                        <p class="file-info" id="file-info-text">No file selected</p>
+                        <p class="status-text" id="status-text"></p>
+                    </div>
+
+                    <button id="run-convert-btn" class="sidebar-action-btn" disabled>
+                        Convert
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="feedback-note">
+            <p><i class="fas fa-wrench"></i> Document conversion & more coming soon.</p>
+            <p>Submit feedback & requests to <a href="mailto:gabriel@gabmort.me">gabriel@gabmort.me</a></p>
+        </div>
+
+    </main>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
