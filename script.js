@@ -1,9 +1,3 @@
-/*
-TODO: 
-- Grey out the format select / file select / convert fields while a conversion is happening
-- Fix the position and z-index of decor items on desktop/mobile (they should always be under top ribbon)
-*/
-
 import { triggerDownload, toggleContrast, setInitialContrast } from './modules/utils.js';
 import { convertFile as convertImageFile } from './modules/image-convert.js';
 import { transcode } from './modules/media-convert.js'; 
@@ -16,24 +10,27 @@ const SUPPORTED_FORMATS = {
     'image/jpeg': ['PNG', 'WEBP', 'PDF', 'ICO'],
     'image/webp': ['PNG', 'JPG', 'PDF', 'ICO'],
     'image/bmp': ['PNG', 'JPG', 'WEBP', 'PDF'],
-    'application/pdf': ['PNG', 'JPG', 'WEBP'],
+    'application/pdf': ['PNG', 'JPG', 'WEBP', 'TXT'],
     
+    // __ TEXT __
+    'text/plain': ['PDF', 'PNG', 'JPG'],
+
     // __ AUDIO __
-    'audio/mpeg': ['WAV', 'FLAC', 'OGG', 'AAC', 'M4A'], // MP3
+    'audio/mpeg': ['WAV', 'FLAC', 'OGG', 'AAC', 'M4A'], 
     'audio/wav': ['MP3', 'FLAC', 'OGG', 'AAC', 'M4A'],
     'audio/x-wav': ['MP3', 'FLAC', 'OGG', 'AAC', 'M4A'],
     'audio/flac': ['MP3', 'WAV', 'OGG', 'AAC', 'M4A'],
     'audio/x-flac': ['MP3', 'WAV', 'OGG', 'AAC', 'M4A'],
     'audio/ogg': ['MP3', 'WAV', 'FLAC', 'AAC'],
     'audio/x-m4a': ['MP3', 'WAV', 'FLAC', 'OGG'],
-    'audio/mp4': ['MP3', 'WAV', 'FLAC', 'OGG'], // M4A can come as audio/mp4
+    'audio/mp4': ['MP3', 'WAV', 'FLAC', 'OGG'], 
 
     // __ VIDEO __
     'video/mp4': ['MP3', 'GIF', 'AVI', 'MOV', 'MKV', 'WEBM', 'FLAC', 'WAV'],
-    'video/quicktime': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'WEBM'], // MOV
+    'video/quicktime': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'WEBM'], 
     'video/webm': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'MOV'],
-    'video/x-msvideo': ['MP4', 'MP3', 'GIF', 'WEBM', 'MOV', 'MKV'], // AVI
-    'video/x-matroska': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'WEBM'], // MKV
+    'video/x-msvideo': ['MP4', 'MP3', 'GIF', 'WEBM', 'MOV', 'MKV'], 
+    'video/x-matroska': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'WEBM'], 
     
     'default': [] 
 };
@@ -77,17 +74,17 @@ async function handleFileSelect(event) {
     fileInfoText.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
 
     // determine formats
-    // browsers can report MIME types differently
     const typeKey = SUPPORTED_FORMATS[file.type] ? file.type : 'default';
     let options = SUPPORTED_FORMATS[typeKey];
     
-    // fallback if exact MIME match fails, try to guess by prefix or extension
+    // fallback logic
     if (!options || options.length === 0) {
         if (file.type.startsWith('image/')) options = ['PNG', 'JPG', 'PDF'];
         else if (file.type.startsWith('video/')) options = ['MP4', 'MP3', 'GIF', 'AVI'];
         else if (file.type.startsWith('audio/')) options = ['MP3', 'WAV', 'FLAC'];
-        else if (file.name.endsWith('.flac')) options = ['MP3', 'WAV', 'OGG', 'AAC']; // FLAC fallback
-        else if (file.name.endsWith('.mkv')) options = ['MP4', 'AVI', 'MP3']; // MKV fallback
+        else if (file.name.endsWith('.flac')) options = ['MP3', 'WAV', 'OGG', 'AAC']; 
+        else if (file.name.endsWith('.mkv')) options = ['MP4', 'AVI', 'MP3']; 
+        else if (file.name.endsWith('.txt')) options = ['PDF', 'PNG', 'JPG']; 
     }
 
     // populate dropdown
@@ -105,7 +102,7 @@ async function handleFileSelect(event) {
     sidebar.classList.add('active');
     convertBtn.disabled = true; 
 
-    // load FFmpeg for media (Audio OR Video)
+    // load FFmpeg for media
     if (file.type.startsWith('video/') || file.type.startsWith('audio/') || 
         file.name.endsWith('.flac') || file.name.endsWith('.mkv') || file.name.endsWith('.avi')) {
         
@@ -136,13 +133,27 @@ async function handleConvertClick() {
     statusText.textContent = "Processing...";
 
     try {
-        // __ IMAGE / PDF __
-        if ((inputType.startsWith('image/') || inputType === 'application/pdf') && !inputType.includes('flac')) {
-            const fileBuffer = await currentFile.arrayBuffer();
-            const resultData = await convertImageFile(fileBuffer, inputType, outputFormat);
+        // __ IMAGE / PDF / TEXT __
+        if ((inputType.startsWith('image/') || inputType === 'application/pdf' || inputType === 'text/plain') 
+             && !inputType.includes('flac')) {
+            
+            let fileData;
+            if (inputType === 'text/plain') {
+                 fileData = await currentFile.text();
+            } else {
+                 fileData = await currentFile.arrayBuffer();
+            }
+
+            const resultData = await convertImageFile(fileData, inputType, outputFormat);
 
             if (resultData) {
-                const newName = replaceExtension(currentFile.name, outputFormat);
+                // detect if the result is a ZIP file (for multi-page PDF conversion)
+                let finalExtension = outputFormat;
+                if (resultData.type === 'application/zip') {
+                    finalExtension = 'zip';
+                }
+
+                const newName = replaceExtension(currentFile.name, finalExtension);
                 convertedResult = { data: resultData, fileName: newName };
                 finishConversion();
             } else {
@@ -154,7 +165,6 @@ async function handleConvertClick() {
             if (!ffmpegInstance) throw new Error("FFmpeg engine not loaded");
 
             const outputName = `output.${outputFormat}`;
-            // FFmpeg command: -i input output
             const args = ['-i', currentFile.name, outputName];
 
             await transcode(ffmpegInstance, currentFile, args, outputName, {});
