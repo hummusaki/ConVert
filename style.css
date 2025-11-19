@@ -398,6 +398,11 @@ html.light-mode .feedback-note a:hover {
    =------------------------= */
 @media screen and (max-width: 768px) {
 
+    body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
     .content-area {
         align-items: flex-start; 
         padding-top: 60px;
@@ -405,6 +410,7 @@ html.light-mode .feedback-note a:hover {
         overflow-y: auto;
         height: auto; 
         display: block;
+        padding-bottom: 40px;
     }
 
     .convert-area {
