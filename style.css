@@ -56,6 +56,7 @@ body {
     z-index: 10;
     box-shadow: 0 4px 12px var(--nav-shadow); 
     transition: background-color 0.3s;
+    min-height: 45px;
 }
 
 .navbar-left .title {
@@ -67,6 +68,8 @@ body {
 .navbar-right {
     display: flex;
     align-items: center;
+    position: absolute;
+    right: 17.5px;
 }
 
 .gm-icon {
@@ -461,6 +464,11 @@ html.light-mode .feedback-note a:hover {
 
     .navbar-left .title {
         display: none; 
+    }
+
+    .navbar-right {
+        right: 17.5px;
+        position: absolute; 
     }
 
     .gm-icon {
