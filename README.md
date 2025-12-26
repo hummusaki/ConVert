@@ -7,7 +7,7 @@
 <h3 align="center">Fully frontent file conversion</h3>
 <p align="center">
   <a href="https://convert.gabmort.me/">
-    <img src="https://skillicons.dev/icons?i=git,figma,js,html,css" />
+    <img src="https://skillicons.dev/icons?i=figma,wasm,js,html,css" />
   </a>
 </p>
 
