@@ -6,7 +6,7 @@
 <h1 align="center">ConVert</h1>
 <h3 align="center">Fully frontent file conversion</h3>
 <p align="center">
-  <a href="https://skillicons.dev">
+  <a href="https://convert.gabmort.me/">
     <img src="https://skillicons.dev/icons?i=git,figma,js,html,css" />
   </a>
 </p>
