@@ -7,10 +7,9 @@ Features:
 File support:
 - Add document and office file support
 - Add vector graphic support
-- allow gif and ico as input formats
 - allow raw image formats
 - allow archive translation
-- add currently unsupported audio and video format support (.midi, .aiff, .wmv, .m4v, etc)
+- add MIDI audio format support
 
 Future:
 - PDF Editing & Creation section

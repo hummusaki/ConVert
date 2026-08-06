@@ -23,6 +23,10 @@ Images
 
   - BMP (image/bmp): Convert to PNG, JPG, WEBP, PDF
 
+  - GIF (image/gif): Convert to PNG, JPG, WEBP, PDF, MP4
+
+  - ICO (image/x-icon, image/vnd.microsoft.icon): Convert to PNG, JPG, WEBP
+
   - PDF (application/pdf): Convert to PNG, JPG, WEBP
 
 Audio
@@ -37,6 +41,10 @@ Audio
 
   - M4A (audio/x-m4a, audio/mp4): Convert to MP3, WAV, FLAC, OGG
 
+  - AIFF (audio/x-aiff): Convert to MP3, WAV, FLAC, OGG, M4A
+
+  - WMA (audio/x-ms-wma): Convert to MP3, WAV, FLAC, OGG, M4A
+
 Video
 
   - MP4 (video/mp4): Convert to MP3, GIF, AVI, MOV, MKV, WEBM, FLAC, WAV
@@ -48,3 +56,7 @@ Video
   - AVI (video/x-msvideo): Convert to MP4, MP3, GIF, WEBM, MOV, MKV
 
   - MKV (video/x-matroska): Convert to MP4, MP3, GIF, AVI, MOV, WEBM
+
+  - WMV (video/x-ms-wmv): Convert to MP4, MP3, GIF, AVI, MOV, MKV, WEBM
+
+  - M4V (video/x-m4v): Convert to MP4, MP3, GIF, AVI, MOV, MKV, WEBM

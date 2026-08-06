@@ -4,12 +4,16 @@ import { transcode } from './modules/media-convert.js';
 import { loadFFmpeg } from './modules/client.js';
 
 // CONFIG
+const NATIVE_CONVERT_FORMATS = ['PNG', 'JPG', 'WEBP', 'PDF', 'ICO', 'TXT'];
 const SUPPORTED_FORMATS = {
     // __ IMAGES __
     'image/png': ['JPG', 'WEBP', 'PDF', 'ICO'],
     'image/jpeg': ['PNG', 'WEBP', 'PDF', 'ICO'],
     'image/webp': ['PNG', 'JPG', 'PDF', 'ICO'],
     'image/bmp': ['PNG', 'JPG', 'WEBP', 'PDF'],
+    'image/gif': ['PNG', 'JPG', 'WEBP', 'PDF', 'MP4'],
+    'image/x-icon': ['PNG', 'JPG', 'WEBP'],
+    'image/vnd.microsoft.icon': ['PNG', 'JPG', 'WEBP'],
     'application/pdf': ['PNG', 'JPG', 'WEBP', 'TXT'],
 
     // __ TEXT __
@@ -24,6 +28,8 @@ const SUPPORTED_FORMATS = {
     'audio/ogg': ['MP3', 'WAV', 'FLAC', 'AAC'],
     'audio/x-m4a': ['MP3', 'WAV', 'FLAC', 'OGG'],
     'audio/mp4': ['MP3', 'WAV', 'FLAC', 'OGG'],
+    'audio/x-aiff': ['MP3', 'WAV', 'FLAC', 'OGG', 'M4A'],
+    'audio/x-ms-wma': ['MP3', 'WAV', 'FLAC', 'OGG', 'M4A'],
 
     // __ VIDEO __
     'video/mp4': ['MP3', 'GIF', 'AVI', 'MOV', 'MKV', 'WEBM', 'FLAC', 'WAV'],
@@ -31,6 +37,8 @@ const SUPPORTED_FORMATS = {
     'video/webm': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'MOV'],
     'video/x-msvideo': ['MP4', 'MP3', 'GIF', 'WEBM', 'MOV', 'MKV'],
     'video/x-matroska': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'WEBM'],
+    'video/x-ms-wmv': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'MKV', 'WEBM'],
+    'video/x-m4v': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'MKV', 'WEBM'],
 
     'default': []
 };
@@ -95,11 +103,17 @@ async function handleFileSelect(event) {
 
     // fallback logic
     if (!options || options.length === 0) {
-        if (file.type.startsWith('image/')) options = ['PNG', 'JPG', 'PDF'];
+        if (file.type.startsWith('image/')) {
+            if (file.type === 'image/gif') options = ['PNG', 'JPG', 'MP4'];
+            else if (file.name.endsWith('.ico')) options = ['PNG', 'JPG'];
+            else options = ['PNG', 'JPG', 'PDF'];
+        }
         else if (file.type.startsWith('video/')) options = ['MP4', 'MP3', 'GIF', 'AVI'];
         else if (file.type.startsWith('audio/')) options = ['MP3', 'WAV', 'FLAC'];
-        else if (file.name.endsWith('.flac')) options = ['MP3', 'WAV', 'OGG', 'AAC'];
-        else if (file.name.endsWith('.mkv')) options = ['MP4', 'AVI', 'MP3'];
+        else if (file.name.endsWith('.flac') || file.name.endsWith('.wma') || file.name.endsWith('.aiff')) options = ['MP3', 'WAV', 'OGG', 'AAC'];
+        else if (file.name.endsWith('.mkv') || file.name.endsWith('.wmv') || file.name.endsWith('.m4v')) options = ['MP4', 'AVI', 'MP3'];
+        else if (file.name.endsWith('.gif')) options = ['PNG', 'JPG', 'MP4'];
+        else if (file.name.endsWith('.ico')) options = ['PNG', 'JPG'];
         else if (file.name.endsWith('.txt')) options = ['PDF', 'PNG', 'JPG'];
     }
 
@@ -118,9 +132,10 @@ async function handleFileSelect(event) {
     sidebar.classList.add('active');
     convertBtn.disabled = true;
 
-    // load FFmpeg for media
-    if (file.type.startsWith('video/') || file.type.startsWith('audio/') ||
-        file.name.endsWith('.flac') || file.name.endsWith('.mkv') || file.name.endsWith('.avi')) {
+    // load FFmpeg if any of the target formats require it
+    const needsFfmpeg = options.some(fmt => !NATIVE_CONVERT_FORMATS.includes(fmt));
+
+    if (needsFfmpeg) {
 
         if (!ffmpegInstance) {
             statusText.textContent = "Initializing engine...";
@@ -152,8 +167,9 @@ async function handleConvertClick() {
 
     try {
         // __ IMAGE / PDF / TEXT __
+        const videoOutputFormats = ['mp4', 'webm', 'avi', 'mov', 'mkv'];
         if ((inputType.startsWith('image/') || inputType === 'application/pdf' || inputType === 'text/plain')
-            && !inputType.includes('flac')) {
+            && !inputType.includes('flac') && !videoOutputFormats.includes(outputFormat)) {
 
             let fileData;
             if (inputType === 'text/plain') {

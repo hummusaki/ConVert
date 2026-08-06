@@ -134,6 +134,10 @@ async function imageToPdf(imageData, imageMimeType) {
         embeddedImage = await pdfDoc.embedPng(imageData);
     } else if (['image/jpeg', 'image/jpg', 'image/webp', 'image.jfif'].includes(imageMimeType)) {
         embeddedImage = await pdfDoc.embedJpg(imageData);
+    } else if (['image/gif', 'image/x-icon', 'image/vnd.microsoft.icon'].includes(imageMimeType)) {
+        const pngBlob = await imageToImage(imageData, 'image/png');
+        const pngData = await pngBlob.arrayBuffer();
+        embeddedImage = await pdfDoc.embedPng(pngData);
     } else {
         throw new Error(`Unsupported image format: ${imageMimeType}`);
     }

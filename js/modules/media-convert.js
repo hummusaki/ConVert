@@ -10,6 +10,7 @@ function getMimeType(fileName) {
         avi: 'video/x-msvideo',
         mkv: 'video/x-matroska',
         wmv: 'video/x-ms-wmv',
+        m4v: 'video/x-m4v',
         
         // Audio
         mp3: 'audio/mpeg',
@@ -18,7 +19,8 @@ function getMimeType(fileName) {
         ogg: 'audio/ogg',
         aac: 'audio/aac',
         m4a: 'audio/mp4',
-        wma: 'audio/x-ms-wma'
+        wma: 'audio/x-ms-wma',
+        aiff: 'audio/x-aiff'
     };
     return map[extension] || 'application/octet-stream';
 }
