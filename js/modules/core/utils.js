@@ -10,6 +10,19 @@ export function triggerDownload(data, filename) {
     URL.revokeObjectURL(url);
 }
 
+export function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+            return resolve(); // already loaded or loading
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
 // -- theme logic --
 
 export function toggleContrast() {
@@ -17,7 +30,7 @@ export function toggleContrast() {
     isLightMode = !isLightMode;
 
     applyTheme(isLightMode);
-    
+
     localStorage.setItem('contrastToggle', isLightMode);
     return isLightMode;
 }
@@ -44,7 +57,7 @@ function applyTheme(isLightMode) {
 
     if (isLightMode) {
         document.documentElement.classList.add("light-mode");
-        
+
         if (favicon) favicon.setAttribute("href", "https://gabmort.me/assets/m2.png");
         if (icon) icon.setAttribute('src', 'https://gabmort.me/assets/m.png');
         if (toggleBtnIcon) {
@@ -53,7 +66,7 @@ function applyTheme(isLightMode) {
         }
     } else {
         document.documentElement.classList.remove("light-mode");
-        
+
         if (favicon) favicon.setAttribute("href", "https://gabmort.me/assets/m.png");
         if (icon) icon.setAttribute('src', 'https://gabmort.me/assets/m2.png');
         if (toggleBtnIcon) {

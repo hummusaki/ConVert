@@ -1,5 +1,5 @@
-import { FFmpeg } from '../../ffmpeg/esm/index.js';
-import { toBlobURL } from '../../ffmpeg/util/dist/esm/index.js';
+import { FFmpeg } from '../../../ffmpeg/esm/index.js';
+import { toBlobURL } from '../../../ffmpeg/util/dist/esm/index.js';
 
 export async function loadFFmpeg(statusElement) {
     const ffmpeg = new FFmpeg();
@@ -14,7 +14,7 @@ export async function loadFFmpeg(statusElement) {
         });
     } else {
         if (statusElement) statusElement.textContent = "Loading engine...";
-        const baseURL = new URL('../../ffmpeg/esm', import.meta.url).href;
+        const baseURL = new URL('../../../ffmpeg/esm', import.meta.url).href;
         await ffmpeg.load({
             coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
             wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
