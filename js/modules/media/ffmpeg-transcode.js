@@ -1,4 +1,4 @@
-import { fetchFile } from '../../ffmpeg/util/dist/esm/index.js';
+import { fetchFile } from '../../../ffmpeg/util/dist/esm/index.js';
 
 function getMimeType(fileName) {
     const extension = fileName.split('.').pop().toLowerCase();
