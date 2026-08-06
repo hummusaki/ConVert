@@ -4,7 +4,8 @@
   </a>
 </p>
 <h1 align="center">ConVert</h1>
-<h3 align="center">Fully frontent file conversion</h3>
+<h3 align="center">https://convert.gabmort.me/</h2>
+<h3 align="center">Full frontent file conversion</h3>
 <p align="center">
   <a href="https://convert.gabmort.me/">
     <img src="https://skillicons.dev/icons?i=figma,wasm,js,html,css" />
