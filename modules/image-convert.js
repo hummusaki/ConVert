@@ -198,22 +198,31 @@ async function pdfToImage(pdfData, outputFormat) {
     const zip = new JSZip();
     const ext = outputFormat.split('/')[1];
 
-    for (let i = 1; i <= pageCount; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const context = canvas.getContext('2d');
+    for (let i = 1; i <= pageCount; i += 5) {
+        const batch = [];
+        for (let j = 0; j < 5 && (i + j) <= pageCount; j++) {
+            const pageNum = i + j;
+            
+            const promise = pdf.getPage(pageNum).then(async (page) => {
+                const viewport = page.getViewport({ scale: 2.0 });
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const context = canvas.getContext('2d');
 
-        await page.render({ canvasContext: context, viewport }).promise;
+                await page.render({ canvasContext: context, viewport }).promise;
 
-        // convert canvas to blob
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, outputFormat, 0.95));
-        
-        // add blob to zip with filename
-        zip.file(`page_${i}.${ext}`, blob);
+                // convert canvas to blob
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, outputFormat, 0.95));
+                
+                // add blob to zip with filename
+                zip.file(`page_${pageNum}.${ext}`, blob);
+            });
+            
+            batch.push(promise);
+        }
+        await Promise.all(batch);
     }
 
     return zip.generateAsync({ type: "blob" });

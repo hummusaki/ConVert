@@ -1,0 +1,11 @@
+{
+  "name": "convert",
+  "version": "1.0.0",
+  "description": "File Converter E2E Tests",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

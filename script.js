@@ -1,7 +1,7 @@
 import { triggerDownload, toggleContrast, setInitialContrast } from './modules/utils.js';
 import { convertFile as convertImageFile } from './modules/image-convert.js';
-import { transcode } from './modules/media-convert.js'; 
-import { loadFFmpeg } from './modules/client.js'; 
+import { transcode } from './modules/media-convert.js';
+import { loadFFmpeg } from './modules/client.js';
 
 // CONFIG
 const SUPPORTED_FORMATS = {
@@ -11,34 +11,35 @@ const SUPPORTED_FORMATS = {
     'image/webp': ['PNG', 'JPG', 'PDF', 'ICO'],
     'image/bmp': ['PNG', 'JPG', 'WEBP', 'PDF'],
     'application/pdf': ['PNG', 'JPG', 'WEBP', 'TXT'],
-    
+
     // __ TEXT __
     'text/plain': ['PDF', 'PNG', 'JPG'],
 
     // __ AUDIO __
-    'audio/mpeg': ['WAV', 'FLAC', 'OGG', 'AAC', 'M4A'], 
+    'audio/mpeg': ['WAV', 'FLAC', 'OGG', 'AAC', 'M4A'],
     'audio/wav': ['MP3', 'FLAC', 'OGG', 'AAC', 'M4A'],
     'audio/x-wav': ['MP3', 'FLAC', 'OGG', 'AAC', 'M4A'],
     'audio/flac': ['MP3', 'WAV', 'OGG', 'AAC', 'M4A'],
     'audio/x-flac': ['MP3', 'WAV', 'OGG', 'AAC', 'M4A'],
     'audio/ogg': ['MP3', 'WAV', 'FLAC', 'AAC'],
     'audio/x-m4a': ['MP3', 'WAV', 'FLAC', 'OGG'],
-    'audio/mp4': ['MP3', 'WAV', 'FLAC', 'OGG'], 
+    'audio/mp4': ['MP3', 'WAV', 'FLAC', 'OGG'],
 
     // __ VIDEO __
     'video/mp4': ['MP3', 'GIF', 'AVI', 'MOV', 'MKV', 'WEBM', 'FLAC', 'WAV'],
-    'video/quicktime': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'WEBM'], 
+    'video/quicktime': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'WEBM'],
     'video/webm': ['MP4', 'MP3', 'GIF', 'AVI', 'MKV', 'MOV'],
-    'video/x-msvideo': ['MP4', 'MP3', 'GIF', 'WEBM', 'MOV', 'MKV'], 
-    'video/x-matroska': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'WEBM'], 
-    
-    'default': [] 
+    'video/x-msvideo': ['MP4', 'MP3', 'GIF', 'WEBM', 'MOV', 'MKV'],
+    'video/x-matroska': ['MP4', 'MP3', 'GIF', 'AVI', 'MOV', 'WEBM'],
+
+    'default': []
 };
 
 // STATE
 let currentFile = null;
-let convertedResult = null; 
+let convertedResult = null;
 let ffmpegInstance = null;
+let ffmpegLoadingPromise = null;
 
 // DOM
 const fileInput = document.getElementById('file-input');
@@ -53,11 +54,26 @@ const downloadBtn = document.getElementById('download-btn');
 document.addEventListener('DOMContentLoaded', () => {
     setInitialContrast();
     document.getElementById('theme-toggle').addEventListener('click', toggleContrast);
-    
+
     fileInput.addEventListener('change', handleFileSelect);
     formatSelect.addEventListener('change', () => convertBtn.disabled = false);
     convertBtn.addEventListener('click', handleConvertClick);
     downloadBtn.addEventListener('click', handleDownloadClick);
+
+    // preload FFmpeg silently
+    ffmpegLoadingPromise = loadFFmpeg({ textContent: '' })
+        .then(instance => {
+            ffmpegInstance = instance;
+            ffmpegInstance.on('progress', ({ progress }) => {
+                if (statusText.textContent.startsWith("Converting")) {
+                    statusText.textContent = `Converting: ${(progress * 100).toFixed(0)}%`;
+                } else {
+                    // update only if it's currently converting, otherwise it might overwrite "Processing..."
+                    statusText.textContent = `Converting: ${(progress * 100).toFixed(0)}%`;
+                }
+            });
+        })
+        .catch(e => console.error("FFmpeg preload failed", e));
 });
 
 // CORE FUNCTIONS
@@ -76,15 +92,15 @@ async function handleFileSelect(event) {
     // determine formats
     const typeKey = SUPPORTED_FORMATS[file.type] ? file.type : 'default';
     let options = SUPPORTED_FORMATS[typeKey];
-    
+
     // fallback logic
     if (!options || options.length === 0) {
         if (file.type.startsWith('image/')) options = ['PNG', 'JPG', 'PDF'];
         else if (file.type.startsWith('video/')) options = ['MP4', 'MP3', 'GIF', 'AVI'];
         else if (file.type.startsWith('audio/')) options = ['MP3', 'WAV', 'FLAC'];
-        else if (file.name.endsWith('.flac')) options = ['MP3', 'WAV', 'OGG', 'AAC']; 
-        else if (file.name.endsWith('.mkv')) options = ['MP4', 'AVI', 'MP3']; 
-        else if (file.name.endsWith('.txt')) options = ['PDF', 'PNG', 'JPG']; 
+        else if (file.name.endsWith('.flac')) options = ['MP3', 'WAV', 'OGG', 'AAC'];
+        else if (file.name.endsWith('.mkv')) options = ['MP4', 'AVI', 'MP3'];
+        else if (file.name.endsWith('.txt')) options = ['PDF', 'PNG', 'JPG'];
     }
 
     // populate dropdown
@@ -100,25 +116,27 @@ async function handleFileSelect(event) {
 
     // open sidebar
     sidebar.classList.add('active');
-    convertBtn.disabled = true; 
+    convertBtn.disabled = true;
 
     // load FFmpeg for media
-    if (file.type.startsWith('video/') || file.type.startsWith('audio/') || 
+    if (file.type.startsWith('video/') || file.type.startsWith('audio/') ||
         file.name.endsWith('.flac') || file.name.endsWith('.mkv') || file.name.endsWith('.avi')) {
-        
+
         if (!ffmpegInstance) {
             statusText.textContent = "Initializing engine...";
             try {
-                ffmpegInstance = await loadFFmpeg({ textContent: '' }); 
-                statusText.textContent = "Engine ready.";
-                
-                ffmpegInstance.on('progress', ({ progress }) => {
-                    statusText.textContent = `Converting: ${(progress * 100).toFixed(0)}%`;
-                });
+                await ffmpegLoadingPromise;
+                if (ffmpegInstance) {
+                    statusText.textContent = "Engine ready.";
+                } else {
+                    throw new Error("FFmpeg failed to initialize during preload");
+                }
             } catch (e) {
                 console.error(e);
                 statusText.textContent = "Engine failed to load.";
             }
+        } else {
+            statusText.textContent = "Engine ready.";
         }
     }
 }
@@ -128,20 +146,20 @@ async function handleConvertClick() {
 
     const inputType = currentFile.type;
     const outputFormat = formatSelect.value;
-    
+
     convertBtn.disabled = true;
     statusText.textContent = "Processing...";
 
     try {
         // __ IMAGE / PDF / TEXT __
-        if ((inputType.startsWith('image/') || inputType === 'application/pdf' || inputType === 'text/plain') 
-             && !inputType.includes('flac')) {
-            
+        if ((inputType.startsWith('image/') || inputType === 'application/pdf' || inputType === 'text/plain')
+            && !inputType.includes('flac')) {
+
             let fileData;
             if (inputType === 'text/plain') {
-                 fileData = await currentFile.text();
+                fileData = await currentFile.text();
             } else {
-                 fileData = await currentFile.arrayBuffer();
+                fileData = await currentFile.arrayBuffer();
             }
 
             const resultData = await convertImageFile(fileData, inputType, outputFormat);
@@ -159,13 +177,19 @@ async function handleConvertClick() {
             } else {
                 throw new Error("Conversion returned no data");
             }
-        } 
+        }
         // __ AUDIO / VIDEO __
         else {
             if (!ffmpegInstance) throw new Error("FFmpeg engine not loaded");
 
             const outputName = `output.${outputFormat}`;
-            const args = ['-i', currentFile.name, outputName];
+            let args = ['-i', currentFile.name];
+
+            const videoFormats = ['mp4', 'webm', 'avi', 'mov', 'mkv'];
+            if (videoFormats.includes(outputFormat)) {
+                args.push('-preset', 'ultrafast');
+            }
+            args.push(outputName);
 
             await transcode(ffmpegInstance, currentFile, args, outputName, {});
 
