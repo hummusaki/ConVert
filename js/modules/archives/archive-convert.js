@@ -10,10 +10,7 @@ async function loadLibArchive() {
         const module = await import('https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/main.js');
         window.Archive = module.Archive;
         
-        const workerResponse = await fetch('https://cdn.jsdelivr.net/npm/libarchive.js@1.3.0/dist/worker-bundle.js');
-        const workerText = await workerResponse.text();
-        const workerBlob = new Blob([workerText], { type: 'application/javascript' });
-        const workerUrl = URL.createObjectURL(workerBlob);
+        const workerUrl = 'js/libarchive/worker-bundle.js';
         
         window.Archive.init({ workerUrl });
         libarchiveLoaded = true;

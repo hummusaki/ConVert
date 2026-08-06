@@ -4,13 +4,6 @@ Features:
 - Add a document previewer/viewer in a separate sidebar for text and pdf files
 - Add the ability to preview videos and audio files
 
-File support:
-- Add document and office file support
-- Add vector graphic support
-- allow raw image formats
-- allow archive translation
-- add MIDI audio format support
-
 Future:
 - PDF Editing & Creation section
 - Image metadata editing
