@@ -14,3 +14,4 @@ File support:
 Future:
 - PDF Editing & Creation section
 - Image metadata editing
+- Add a page to check which formats are supported for input/output
