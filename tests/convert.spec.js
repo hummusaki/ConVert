@@ -10,7 +10,7 @@ test.describe('ConVert E2E Tests', () => {
 
   test('should convert a TXT file to PDF', async ({ page }) => {
     // Wait for the app to initialize
-    await page.waitForSelector('#file-input');
+    await page.waitForSelector('#file-input', { state: 'attached' });
 
     // Upload sample.txt
     const fileInput = page.locator('#file-input');
